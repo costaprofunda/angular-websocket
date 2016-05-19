@@ -54,7 +54,6 @@
       this.initialTimeout              = options && options.initialTimeout             || 500; // 500ms
       this.maxTimeout                  = options && options.maxTimeout                 || 5 * 60 * 1000; // 5 minutes
       this.reconnectIfNotNormalClose   = options && options.reconnectIfNotNormalClose  || false;
-      this.binaryType                  = options && options.binaryType                 || 'blob';
 
       this._reconnectAttempts = 0;
       this.sendQueue          = [];
@@ -114,7 +113,6 @@
         this.socket.onopen  = angular.bind(this, this._onOpenHandler);
         this.socket.onerror = angular.bind(this, this._onErrorHandler);
         this.socket.onclose = angular.bind(this, this._onCloseHandler);
-        this.socket.binaryType = this.binaryType;
       }
     };
 
@@ -123,7 +121,7 @@
         var data = this.sendQueue.shift();
 
         this.socket.send(
-          isString(data.message) || this.binaryType != "blob" ? data.message : JSON.stringify(data.message)
+          isString(data.message) ? data.message : JSON.stringify(data.message)
         );
         data.deferred.resolve();
       }
@@ -194,7 +192,7 @@
         });
       } else {
         self.notifyCloseCallbacks(event);
-        self.safeDigest(autoApply);
+        self.safeDigest(true);
       }
       if ((this.reconnectIfNotNormalClose && event.code !== this._normalCloseCode) || this._reconnectableStatusCodes.indexOf(event.code) > -1) {
         this.reconnect();
@@ -209,7 +207,7 @@
         });
       } else {
         self.notifyErrorCallbacks(event);
-        self.safeDigest(autoApply);
+        self.safeDigest(true);
       }
     };
 
